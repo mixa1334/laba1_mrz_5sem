@@ -10,16 +10,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class NeuralNetwork {
-    private final int rectangleWidth = 4;
-    private final int rectangleHeight = 4;
+    private static final int RECTANGLE_WIDTH = 4;
+    private static final int RECTANGLE_HEIGHT = 4;
     private final int p;
-    private final double learningRate = 0.0001;
+    private static final double LEARNING_RATE = 0.0001;
     private double error;
     private Matrix firstLayerMatrix;
     private Matrix secondLayerMatrix;
 
     public NeuralNetwork(double error) {
-        p = rectangleHeight * rectangleWidth * 3 / 2;
+        p = RECTANGLE_HEIGHT * RECTANGLE_WIDTH * 3 / 2;
         this.error = error;
         createFirstLayerWeightsMatrix();
         createSecondLayerWeightsMatrix();
@@ -44,8 +44,8 @@ public class NeuralNetwork {
             int y = rectangle.getY();
             List<Color> colors = ImgRectangle.convertVectorToColors(vector);
             int position = 0;
-            for (int i = 0; i < rectangleWidth; i++) {
-                for (int j = 0; j < rectangleHeight; j++) {
+            for (int i = 0; i < RECTANGLE_WIDTH; i++) {
+                for (int j = 0; j < RECTANGLE_HEIGHT; j++) {
                     Color color = colors.get(position++);
                     if (x + i < width) {
                         if (y + j < height) {
@@ -82,11 +82,11 @@ public class NeuralNetwork {
     }
 
     public int getRectangleWidth() {
-        return rectangleWidth;
+        return RECTANGLE_WIDTH;
     }
 
     public int getRectangleHeight() {
-        return rectangleHeight;
+        return RECTANGLE_HEIGHT;
     }
 
     public int getP() {
@@ -94,7 +94,7 @@ public class NeuralNetwork {
     }
 
     public double getLearningRate() {
-        return learningRate;
+        return LEARNING_RATE;
     }
 
     public double getError() {
@@ -106,11 +106,11 @@ public class NeuralNetwork {
     }
 
     private void createFirstLayerWeightsMatrix() {
-        firstLayerMatrix = Matrix.randomMatrix(rectangleWidth * rectangleHeight * 3, p);
+        firstLayerMatrix = Matrix.randomMatrix(RECTANGLE_WIDTH * RECTANGLE_HEIGHT * 3, p);
     }
 
     private void createSecondLayerWeightsMatrix() {
-        secondLayerMatrix = Matrix.randomMatrix(p, rectangleWidth * rectangleHeight * 3);
+        secondLayerMatrix = Matrix.randomMatrix(p, RECTANGLE_WIDTH * RECTANGLE_HEIGHT * 3);
     }
 
     private List<ImgRectangle> splitImageIntoRectangles(BufferedImage image) {
@@ -120,8 +120,8 @@ public class NeuralNetwork {
             int y = 0;
             while (y < image.getHeight()) {
                 List<Color> colors = new LinkedList<>();
-                for (int i = x; i < x + rectangleWidth; i++) {
-                    for (int j = y; j < y + rectangleHeight; j++) {
+                for (int i = x; i < x + RECTANGLE_WIDTH; i++) {
+                    for (int j = y; j < y + RECTANGLE_HEIGHT; j++) {
                         if (i < image.getWidth() && j < image.getHeight()) {
                             Color color = new Color(image.getRGB(i, j));
                             colors.add(color);
@@ -135,16 +135,16 @@ public class NeuralNetwork {
                 rectangle.setX(x);
                 rectangle.setY(y);
                 rectangles.add(rectangle);
-                y += rectangleHeight;
+                y += RECTANGLE_HEIGHT;
             }
-            x += rectangleWidth;
+            x += RECTANGLE_WIDTH;
         }
         return rectangles;
     }
 
     private void correctWeights(Matrix inputVector, Matrix outputVector, Matrix delay) {
-        firstLayerMatrix = firstLayerMatrix.subtract(inputVector.transpose().multiply(learningRate).multiply(delay).get().multiply(secondLayerMatrix.transpose()).get()).get();
-        secondLayerMatrix = secondLayerMatrix.subtract(outputVector.transpose().multiply(learningRate).multiply(delay).get()).get();
+        firstLayerMatrix = firstLayerMatrix.subtract(inputVector.transpose().multiply(LEARNING_RATE).multiply(delay).get().multiply(secondLayerMatrix.transpose()).get()).get();
+        secondLayerMatrix = secondLayerMatrix.subtract(outputVector.transpose().multiply(LEARNING_RATE).multiply(delay).get()).get();
         normaliseWeights(firstLayerMatrix);
         normaliseWeights(secondLayerMatrix);
     }

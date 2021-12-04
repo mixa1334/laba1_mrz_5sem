@@ -4,14 +4,14 @@ import java.awt.*;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ImgRectangle {
+public class ImgVector {
     private static final double MAX_VALUE = 255;
     private int x;
     private int y;
     private Matrix vector;
     private List<Color> colors;
 
-    public ImgRectangle() {
+    public ImgVector() {
     }
 
     public int getX() {
@@ -62,16 +62,16 @@ public class ImgRectangle {
     public static List<Color> convertVectorToColors(Matrix vector) {
         List<Color> colors = new LinkedList<>();
         for (int i = 0; i < vector.getColumns(); ) {
-            int red = restorePixel(vector.getValue(0, i++));
-            int green = restorePixel(vector.getValue(0, i++));
-            int blue = restorePixel(vector.getValue(0, i++));
+            int red = convertValueToColor(vector.getValue(0, i++));
+            int green = convertValueToColor(vector.getValue(0, i++));
+            int blue = convertValueToColor(vector.getValue(0, i++));
             Color color = new Color(red, green, blue);
             colors.add(color);
         }
         return colors;
     }
 
-    private static int restorePixel(double value) {
+    private static int convertValueToColor(double value) {
         double result = MAX_VALUE * (value + 1) / 2;
         if (result < 0) {
             result = 0;

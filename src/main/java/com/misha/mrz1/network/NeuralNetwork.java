@@ -28,8 +28,8 @@ public class NeuralNetwork {
         RECTANGLE_WIDTH = rectangleWidth;
         p = RECTANGLE_HEIGHT * RECTANGLE_WIDTH * 3 / 2;
         this.error = error;
-        createFirstLayerWeightsMatrix();
-        createSecondLayerWeightsMatrix();
+        firstLayerMatrix = Matrix.randomMatrix(RECTANGLE_WIDTH * RECTANGLE_HEIGHT * 3, p);
+        secondLayerMatrix = Matrix.randomMatrix(p, RECTANGLE_WIDTH * RECTANGLE_HEIGHT * 3);
     }
 
     public List<ImgVector> compressImage(BufferedImage image) {
@@ -112,14 +112,6 @@ public class NeuralNetwork {
         this.error = error;
     }
 
-    private void createFirstLayerWeightsMatrix() {
-        firstLayerMatrix = Matrix.randomMatrix(RECTANGLE_WIDTH * RECTANGLE_HEIGHT * 3, p);
-    }
-
-    private void createSecondLayerWeightsMatrix() {
-        secondLayerMatrix = Matrix.randomMatrix(p, RECTANGLE_WIDTH * RECTANGLE_HEIGHT * 3);
-    }
-
     private List<ImgVector> splitImageIntoRectangles(BufferedImage image) {
         List<ImgVector> rectangles = new ArrayList<>();
         int x = 0;
@@ -133,7 +125,7 @@ public class NeuralNetwork {
                             Color color = new Color(image.getRGB(i, j));
                             colors.add(color);
                         } else {
-                            colors.add(new Color(-1, -1, -1));
+                            colors.add(new Color(0, 0, 0));
                         }
                     }
                 }
@@ -150,8 +142,8 @@ public class NeuralNetwork {
     }
 
     private void correctWeights(Matrix inputVector, Matrix outputVector, Matrix delay) {
-        firstLayerMatrix = firstLayerMatrix.subtract(inputVector.transpose().multiply(LEARNING_RATE).multiply(delay).get().multiply(secondLayerMatrix.transpose()).get()).get();
         secondLayerMatrix = secondLayerMatrix.subtract(outputVector.transpose().multiply(LEARNING_RATE).multiply(delay).get()).get();
+        firstLayerMatrix = firstLayerMatrix.subtract(inputVector.transpose().multiply(LEARNING_RATE).multiply(delay).get().multiply(secondLayerMatrix.transpose()).get()).get();
         normaliseWeights(firstLayerMatrix);
         normaliseWeights(secondLayerMatrix);
     }

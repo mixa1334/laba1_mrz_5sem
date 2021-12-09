@@ -7,25 +7,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class Main {
     private static final Logger logger = LogManager.getLogger();
 
-    public static void main(String[] args) {
-        final double error = 500;
-        NeuralNetwork neuralNetwork = new NeuralNetwork(0.0001, 4, 4, error);
+    public static void main(String[] args) throws IOException {
+        NeuralNetwork neuralNetwork = new NeuralNetwork(0.0001, 4, 4, 500);
         List<BufferedImage> images = inputImage();
-        if (images.size() < 1) {
-            return;
-        }
-        neuralNetwork.learn(images.get(images.size() - 1));
         int L = 0;
+        neuralNetwork.learn(images.get(3));
         for (int i = 1; i <= images.size(); i++) {
             BufferedImage image = images.get(i - 1);
             List<ImgVector> result = neuralNetwork.compressImage(image);
@@ -36,24 +34,20 @@ public class Main {
         printParameters(neuralNetwork, L);
     }
 
-    private static List<BufferedImage> inputImage() {
-        List<BufferedImage> images = new LinkedList<>();
-        JFrame frame = new JFrame();
-        JFileChooser chosenFile = new JFileChooser("src/main/resources/images");
-        chosenFile.setMultiSelectionEnabled(true);
-        int ret = chosenFile.showOpenDialog(frame);
-        if (ret == 0) {
-            var files = chosenFile.getSelectedFiles();
-            try {
-                for (File file : files) {
-                    images.add(ImageIO.read(file));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    private static List<BufferedImage> inputImage() throws IOException {
+        try (Stream<Path> paths = Files.walk(Paths.get("src/main/resources/images"))) {
+            return paths.filter(Files::isRegularFile)
+                    .map(img -> {
+                        try {
+                            return ImageIO.read(img.toFile());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        return null;
+                    }).toList();
+        } catch (IOException e) {
+            throw e;
         }
-        frame.dispose();
-        return images;
     }
 
 

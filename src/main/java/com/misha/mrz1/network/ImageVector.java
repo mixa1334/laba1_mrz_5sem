@@ -1,17 +1,19 @@
-package com.misha.mrz1.service;
+package com.misha.mrz1.network;
+
+import com.misha.mrz1.service.Matrix;
 
 import java.awt.*;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ImgVector {
+public class ImageVector {
     private static final double MAX_VALUE = 255;
     private int x;
     private int y;
     private Matrix vector;
     private List<Color> colors;
 
-    public ImgVector() {
+    public ImageVector() {
     }
 
     public int getX() {

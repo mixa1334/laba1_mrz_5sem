@@ -8,7 +8,7 @@
     </Properties>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="${pattern_console}" />
+            <PatternLayout pattern="${pattern_console}"/>
         </Console>
         <File name="File1" fileName="logs/text.log" bufferedIO="true">
             <PatternLayout pattern="${pattern_console}"/>
@@ -32,7 +32,7 @@
     </Appenders>
     <Loggers>
         <Root level="debug">
-            <!--<AppenderRef ref="FileZip"/>-->
+            <AppenderRef ref="FileZip"/>
             <AppenderRef ref="Console" level="trace"/>
         </Root>
     </Loggers>

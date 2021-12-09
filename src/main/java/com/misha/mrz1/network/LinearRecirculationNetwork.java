@@ -1,7 +1,6 @@
 package com.misha.mrz1.network;
 
 import com.misha.mrz1.service.Matrix;
-import com.misha.mrz1.service.ImgVector;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,17 +11,17 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class NeuralNetwork {
+public class LinearRecirculationNetwork {
     private static final Logger logger = LogManager.getLogger();
     private final int RECTANGLE_WIDTH;
     private final int RECTANGLE_HEIGHT;
     private final int p;
     private final double LEARNING_RATE;
-    private double error;
+    private final double error;
     private Matrix firstLayerMatrix;
     private Matrix secondLayerMatrix;
 
-    public NeuralNetwork(double learningRate, int rectangleWidth, int rectangleHeight, double error) {
+    public LinearRecirculationNetwork(double learningRate, int rectangleWidth, int rectangleHeight, double error) {
         LEARNING_RATE = learningRate;
         RECTANGLE_HEIGHT = rectangleHeight;
         RECTANGLE_WIDTH = rectangleWidth;
@@ -32,24 +31,24 @@ public class NeuralNetwork {
         secondLayerMatrix = Matrix.randomMatrix(p, RECTANGLE_WIDTH * RECTANGLE_HEIGHT * 3);
     }
 
-    public List<ImgVector> compressImage(BufferedImage image) {
-        List<ImgVector> input = splitImageIntoRectangles(image);
+    public List<ImageVector> compressImage(BufferedImage image) {
+        List<ImageVector> input = splitImageIntoRectangles(image);
         Matrix vector;
-        for (ImgVector rectangle : input) {
+        for (ImageVector rectangle : input) {
             vector = rectangle.getVector().multiply(firstLayerMatrix).get();
             rectangle.setVector(vector);
         }
         return input;
     }
 
-    public BufferedImage restoreImage(List<ImgVector> compressed, int width, int height) {
+    public BufferedImage restoreImage(List<ImageVector> compressed, int width, int height) {
         BufferedImage restoredImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         Matrix vector;
-        for (ImgVector rectangle : compressed) {
+        for (ImageVector rectangle : compressed) {
             vector = rectangle.getVector().multiply(secondLayerMatrix).get();
             int x = rectangle.getX();
             int y = rectangle.getY();
-            List<Color> colors = ImgVector.convertVectorToColors(vector);
+            List<Color> colors = ImageVector.convertVectorToColors(vector);
             int position = 0;
             for (int i = 0; i < RECTANGLE_WIDTH; i++) {
                 for (int j = 0; j < RECTANGLE_HEIGHT; j++) {
@@ -66,54 +65,40 @@ public class NeuralNetwork {
     }
 
     public void learn(BufferedImage image) {
-        List<ImgVector> rectangles = splitImageIntoRectangles(image);
+        List<ImageVector> rectangles = splitImageIntoRectangles(image);
         int iteration = 0;
         Matrix restoredVector;
-        Matrix delay;
+        Matrix difference;
         Matrix inputVector;
         Matrix outputVector;
         double E = Double.MAX_VALUE;
         while (E > error) {
             E = 0;
-            for (ImgVector rectangle : rectangles) {
+            for (ImageVector rectangle : rectangles) {
                 inputVector = rectangle.getVector();
                 outputVector = inputVector.multiply(firstLayerMatrix).get();
                 restoredVector = outputVector.multiply(secondLayerMatrix).get();
-                delay = restoredVector.subtract(inputVector).get();
-                correctWeights(inputVector, outputVector, delay);
-                E += calculateError(delay);
+                difference = restoredVector.subtract(inputVector).get();
+                correctWeights(inputVector, outputVector, difference);
+                E += calculateError(difference);
             }
             iteration++;
             logger.log(Level.INFO, "iteration- " + iteration + " error- " + E);
         }
     }
 
-    public int getRectangleWidth() {
-        return RECTANGLE_WIDTH;
+    public void printParameters(int L) {
+        int N = RECTANGLE_WIDTH * RECTANGLE_HEIGHT * 3;
+        double Z = (N * L) / ((N + L) * p + 2.0);
+        logger.log(Level.INFO, "n = " + RECTANGLE_WIDTH);
+        logger.log(Level.INFO, "m = " + RECTANGLE_HEIGHT);
+        logger.log(Level.INFO, "p = " + p);
+        logger.log(Level.INFO, "Z = " + Z);
+        logger.log(Level.INFO, "L = " + L);
     }
 
-    public int getRectangleHeight() {
-        return RECTANGLE_HEIGHT;
-    }
-
-    public int getP() {
-        return p;
-    }
-
-    public double getLearningRate() {
-        return LEARNING_RATE;
-    }
-
-    public double getError() {
-        return error;
-    }
-
-    public void setError(double error) {
-        this.error = error;
-    }
-
-    private List<ImgVector> splitImageIntoRectangles(BufferedImage image) {
-        List<ImgVector> rectangles = new ArrayList<>();
+    private List<ImageVector> splitImageIntoRectangles(BufferedImage image) {
+        List<ImageVector> rectangles = new ArrayList<>();
         int x = 0;
         while (x < image.getWidth()) {
             int y = 0;
@@ -129,7 +114,7 @@ public class NeuralNetwork {
                         }
                     }
                 }
-                ImgVector rectangle = new ImgVector();
+                ImageVector rectangle = new ImageVector();
                 rectangle.setColors(colors);
                 rectangle.setX(x);
                 rectangle.setY(y);
@@ -152,7 +137,7 @@ public class NeuralNetwork {
         for (int i = 0; i < matrix.getRows(); i++) {
             double value = 0;
             for (int j = 0; j < matrix.getColumns(); j++) {
-                value += matrix.getValue(i, j) * matrix.getValue(i, j);
+                value += Math.pow(matrix.getValue(i, j), 2);
             }
             value = Math.sqrt(value);
             for (int j = 0; j < matrix.getColumns(); j++) {
